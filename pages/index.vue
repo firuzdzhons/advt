@@ -1,83 +1,99 @@
 <template>
-  <v-row justify="center" align="center">
-    <v-col cols="12" sm="8" md="6">
-      <v-card class="logo py-4 d-flex justify-center">
-        <NuxtLogo />
-        <VuetifyLogo />
-      </v-card>
-      <v-card>
-        <v-card-title class="headline">
-          Welcome to the Vuetify + Nuxt.js template
-        </v-card-title>
-        <v-card-text>
-          <p>Vuetify is a progressive Material Design component framework for Vue.js. It was designed to empower developers to create amazing applications.</p>
-          <p>
-            For more information on Vuetify, check out the <a
-              href="https://vuetifyjs.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              documentation
-            </a>.
-          </p>
-          <p>
-            If you have questions, please join the official <a
-              href="https://chat.vuetifyjs.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="chat"
-            >
-              discord
-            </a>.
-          </p>
-          <p>
-            Find a bug? Report it on the github <a
-              href="https://github.com/vuetifyjs/vuetify/issues"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="contribute"
-            >
-              issue board
-            </a>.
-          </p>
-          <p>Thank you for developing with Vuetify and I look forward to bringing more exciting features in the future.</p>
-          <div class="text-xs-right">
-            <em><small>&mdash; John Leider</small></em>
-          </div>
-          <hr class="my-3">
-          <a
-            href="https://nuxtjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Nuxt Documentation
-          </a>
-          <br>
-          <a
-            href="https://github.com/nuxt/nuxt.js"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Nuxt GitHub
-          </a>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            color="primary"
-            nuxt
-            to="/inspire"
-          >
-            Continue
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-col>
+  <div>
+    <h1>All advertisements</h1>
+    <div class="d-inline-flex">
+         <v-select
+            filled
+            :items="sortColumns"
+            label="Сортировать по"
+            item-text="text"
+            item-value="value"
+            class="mr-4"
+            v-model="sortByColumn"
+            @change="fetchAdvertisements"
+        ></v-select>
+        <v-select
+            filled
+            :items="sortDirections"
+            label="Направление сортировки"
+            v-model="sortDirection"
+            @change="fetchAdvertisements"
+        ></v-select>
+    </div>
+    <v-row align="center">
+      <v-col cols="12" sm="6" md="3" v-for="advt in advertisements" :key="advt.id">
+        <Advertisement :body="advt"/>
+      </v-col>
   </v-row>
+  <div class="text-center">
+      <v-pagination
+          v-model="page"
+          :length="length"
+          circle
+          @input="fetchAdvertisements"
+          :loading = "loading"
+      ></v-pagination>
+    </div>
+  </div>
+
 </template>
 
 <script>
 export default {
-  name: 'IndexPage'
+  name: 'IndexPage',
+  data() {
+    return {
+      page: 1,
+      length: 0,
+      advertisements: [],
+      loading: false,
+      sortByColumn: '',
+      sortDirection: '',
+      sortColumns: [
+        {"value": "price", "text": "Цена"},
+        {"value": "created_at", "text": "Дата создания"}
+      ],
+      sortDirections: [
+        {"value": "asc", "text": "По возрастанию"},
+        {"value": "desc", "text": "По убыванию"}
+      ]
+
+    }
+  },
+  created() {
+    this.init();
+    this.fetchAdvertisements();
+  },
+  methods: {
+    init() {
+        this.sortByColumn = this.$route.query.sortByColumn;
+
+        this.sortDirection = this.$route.query.sortDirection;
+
+        if (this.$route.query.page) {
+            this.page = parseInt(this.$route.query.page);
+        } else {
+            this.$router.push({ query: { page: this.page }})
+    }
+    },
+
+    async fetchAdvertisements () {
+      this.loading  = true;
+
+      const response = (await this.$axios.$get(`advertisement?page=${this.page}&sort_by_column=${this.sortByColumn}&sort_direction=${this.sortDirection}`))
+
+      this.advertisements = response.data;
+
+      this.length = parseInt(response.last_page);
+
+      this.$router.push({ query: { 
+          page: response.current_page,
+          sortByColumn: this.sortByColumn,
+          sortDirection: this.sortDirection
+        }})
+
+      this.loading = false;
+    },
+  },
 }
 </script>
