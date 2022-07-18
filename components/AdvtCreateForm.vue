@@ -1,15 +1,28 @@
 <template lang="">
   <v-card class="mx-auto my-12 pa-9">
+      <h2 class="text-center">
+        Создание объявлений
+      </h2>
+     <v-alert
+          dense
+          text
+          type="success"
+          v-if="successResponse"
+        >
+          {{successResponse.message}}
+      </v-alert>
       <v-form ref="form" v-model="valid" lazy-validation>
+        
         <v-text-field
           v-model="title"
-          :rules="titleRules"
-          label="Title"
+          :rules="requiredRule"
+          label="Название*"
           required
         ></v-text-field>
         <v-text-field
           v-model="price"
-          label="Price"
+          label="Цена*"
+          :rules="requiredRule"
           type="number"
           min="0"
           required
@@ -17,10 +30,11 @@
         <div>
         </div>
         <div>
-            <p>Image links</p>
+            <p class="font-weight-bold mt-5">Ссылки на изображения*</p>
             <div v-for="(link, index) in imageLinks" class="d-flex">
               <v-text-field
                 v-model="link.value"
+                :rules="requiredRule"
                 required
               ></v-text-field>
               <v-btn
@@ -37,19 +51,19 @@
             </v-btn>
             </div>
             <v-btn
-              text
               color="primary"
               @click="addImageLink"
               :disabled="imageLinks.length == 3"
             >
-            Add link
+            Добавить ссылку
           </v-btn>
           
         </div>
         <v-textarea
           name="description"
-          label="Description"
+          label="Описание"
           v-model="description"
+          :rules="requiredRule"
         ></v-textarea>
 
         <v-btn
@@ -58,7 +72,7 @@
           depressed
           color="primary"
         >
-          Create
+          Создать
         </v-btn>
     </v-form>
   </v-card>
@@ -77,8 +91,9 @@ export default {
         {value: ''}
       ],
       description: '',
-      titleRules: [
-        v => !!v || 'Title is required',
+      successResponse: '', 
+      requiredRule: [
+        v => !!v || 'Поле, обязательное для заполнения',
       ],
     }),
 
@@ -86,6 +101,7 @@ export default {
       createAdvt(){
         this.loading = true;
         let imageLinks = [];
+        this.successResponse = null;
 
 
         for (let i in this.imageLinks) {
@@ -97,8 +113,9 @@ export default {
           'price': this.price,
           'image_links': imageLinks
         })
-            .then(() => {
-                this.reset()
+            .then(({data}) => {
+              this.successResponse = data;
+              this.reset();
             })
             .catch(function (error) {
                 console.log(error);

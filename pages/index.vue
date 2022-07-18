@@ -1,6 +1,9 @@
 <template>
   <div>
-    <h1>All advertisements</h1>
+    <h1 class="my-5">Все объявления</h1>
+    <div class="text-center font-weight-bold" v-if="loading">
+       Идет загрузка ...
+    </div>
     <div class="d-inline-flex">
          <v-select
             filled
@@ -10,22 +13,24 @@
             item-value="value"
             class="mr-4"
             v-model="sortByColumn"
-            @change="fetchAdvertisements"
+            @change="sortAdvt"
         ></v-select>
         <v-select
             filled
             :items="sortDirections"
+            item-text="text"
+            item-value="value"
             label="Направление сортировки"
             v-model="sortDirection"
-            @change="fetchAdvertisements"
+            @change="sortAdvt"
         ></v-select>
     </div>
-    <v-row align="center">
+    <v-row align="center" v-if="advertisements.length">
       <v-col cols="12" sm="6" md="3" v-for="advt in advertisements" :key="advt.id">
         <Advertisement :body="advt"/>
       </v-col>
-  </v-row>
-  <div class="text-center">
+    </v-row>
+  <div class="text-center" v-if="advertisements.length">
       <v-pagination
           v-model="page"
           :length="length"
@@ -84,16 +89,23 @@ export default {
 
       this.advertisements = response.data;
 
-      this.length = parseInt(response.last_page);
+      this.length = parseInt(response.meta.last_page);
 
       this.$router.push({ query: { 
-          page: response.current_page,
+          page: response.meta.current_page,
           sortByColumn: this.sortByColumn,
           sortDirection: this.sortDirection
         }})
 
       this.loading = false;
     },
+
+    sortAdvt() {
+      if(this.sortByColumn && this.sortDirection) {
+        this.fetchAdvertisements()
+      }
+
+    }
   },
 }
 </script>

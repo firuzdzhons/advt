@@ -3,9 +3,11 @@
     <v-app-bar
       app 
     >
-      <v-toolbar-title v-text="title" to="/"/>
+      <v-toolbar-title>
+        <nuxt-link to="/">ADVT</nuxt-link>
+      </v-toolbar-title>
       <v-spacer />
-      <v-btn to="/create"
+      <v-btn  v-if="$nuxt.$route.path != '/advertisements/create'" to="/advertisements/create"
           depressed
           color="primary"
         >

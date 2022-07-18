@@ -2,7 +2,7 @@
     <v-card class="mx-auto my-6" max-width="374">
         <v-img
             height="250"
-            src="https://cdn.vuetifyjs.com/images/cards/cooking.png"
+            :src="body.main_image"
         ></v-img>
 
         <v-card-title>{{body.title}}</v-card-title>
@@ -14,6 +14,7 @@
             <v-btn
                 color="deep-purple lighten-2"
                 text
+                :to="'/advertisements/'+body.id"
             >
                 Open
             </v-btn>
